@@ -1,5 +1,5 @@
 {
-	"name": "dw_db_pizzas",
+	"name": "dw_db_order_details",
 	"properties": {
 		"folder": {
 			"name": "DB_PIZZAS"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Pizzas_csv",
+						"referenceName": "Order_detail_csv",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ds_dim_pizza",
+						"referenceName": "ds_dim_detalle_orden",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,62 +27,44 @@
 			"transformations": [
 				{
 					"name": "select1"
-				},
-				{
-					"name": "aggregate1"
-				},
-				{
-					"name": "sort1"
-				},
-				{
-					"name": "Modificarfila1"
 				}
 			],
 			"scriptLines": [
 				"source(output(",
+				"          order_details_id as string,",
+				"          order_id as string,",
 				"          pizza_id as string,",
-				"          pizza_type_id as string,",
-				"          size as string,",
-				"          price as float",
+				"          quantity as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
 				"source1 select(mapColumn(",
+				"          order_details_id,",
+				"          order_id,",
 				"          pizza_id,",
-				"          pizza_type_id,",
-				"          size,",
-				"          price",
+				"          quantity",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 aggregate(groupBy(pizza_id),",
-				"     each(match(name != 'pizza_id'), $$ = first($$))) ~> aggregate1",
-				"aggregate1 sort(asc(pizza_id, true)) ~> sort1",
-				"sort1 alterRow(upsertIf(isNull(pizza_id) )) ~> Modificarfila1",
-				"Modificarfila1 sink(allowSchemaDrift: true,",
+				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
+				"          order_details_id as integer,",
+				"          order_id as integer,",
 				"          pizza_id as string,",
-				"          pizza_type_id as string,",
-				"          size as string,",
+				"          quantity as integer,",
+				"          date as date,",
 				"          price as decimal(5,2)",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:false,",
+				"     insertable:true,",
 				"     updateable:false,",
-				"     upsertable:true,",
-				"     keys:['pizza_id'],",
+				"     upsertable:false,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
-				"     mapColumn(",
-				"          pizza_id,",
-				"          pizza_type_id,",
-				"          size,",
-				"          price",
-				"     )) ~> sink1"
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

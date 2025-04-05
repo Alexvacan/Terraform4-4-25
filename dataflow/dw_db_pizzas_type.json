@@ -1,5 +1,5 @@
 {
-	"name": "dw_db_pizzas",
+	"name": "dw_db_pizzas_type",
 	"properties": {
 		"folder": {
 			"name": "DB_PIZZAS"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Pizzas_csv",
+						"referenceName": "tipo_pizzas_csv",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ds_dim_pizza",
+						"referenceName": "ds_dim_pizza_type",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -29,59 +29,47 @@
 					"name": "select1"
 				},
 				{
-					"name": "aggregate1"
-				},
-				{
-					"name": "sort1"
-				},
-				{
-					"name": "Modificarfila1"
+					"name": "aggregate1",
+					"description": "Agregación de datos por \"\"\"\"pizza_type_id\"\"\" "
 				}
 			],
 			"scriptLines": [
 				"source(output(",
-				"          pizza_id as string,",
-				"          pizza_type_id as string,",
-				"          size as string,",
-				"          price as float",
+				"          {\"\"\"pizza_type_id\"\"} as string,",
+				"          {\"\"name\"\"} as string,",
+				"          {\"\"category\"\"\";;;;;;} as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
 				"source1 select(mapColumn(",
-				"          pizza_id,",
-				"          pizza_type_id,",
-				"          size,",
-				"          price",
+				"          {\"\"\"pizza_type_id\"\"},",
+				"          {\"\"name\"\"},",
+				"          {\"\"category\"\"\";;;;;;}",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 aggregate(groupBy(pizza_id),",
-				"     each(match(name != 'pizza_id'), $$ = first($$))) ~> aggregate1",
-				"aggregate1 sort(asc(pizza_id, true)) ~> sort1",
-				"sort1 alterRow(upsertIf(isNull(pizza_id) )) ~> Modificarfila1",
-				"Modificarfila1 sink(allowSchemaDrift: true,",
+				"select1 aggregate(groupBy({\"\"\"pizza_type_id\"\"}),",
+				"     each(match(name != '\"\"\"pizza_type_id\"\"'), $$ = first($$))) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          pizza_id as string,",
 				"          pizza_type_id as string,",
-				"          size as string,",
-				"          price as decimal(5,2)",
+				"          name as string,",
+				"          category as string",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:false,",
+				"     insertable:true,",
 				"     updateable:false,",
-				"     upsertable:true,",
-				"     keys:['pizza_id'],",
+				"     upsertable:false,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          pizza_id,",
-				"          pizza_type_id,",
-				"          size,",
-				"          price",
+				"          pizza_type_id = {\"\"\"pizza_type_id\"\"},",
+				"          name = {\"\"name\"\"},",
+				"          category = {\"\"category\"\"\";;;;;;}",
 				"     )) ~> sink1"
 			]
 		}
